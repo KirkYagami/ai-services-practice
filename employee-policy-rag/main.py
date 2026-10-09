@@ -15,8 +15,19 @@ def load_and_chunk_document(document_path):
 
 def retrieve_sections(question, embedding_model, collection):
     """Retrieve the four closest chunks and retain their section labels."""
-    # TODO: implement this function.
-    raise NotImplementedError("Implement retrieve_sections")
+    embedding = embedding_model.encode(question).tolist()
+    result = collection.query(query_embeddings=[embedding], n_results=N_RESULTS)
+    retrieved = [
+        {
+            "chunk": text,
+            "section": metadata["section"],
+            "similarity": round(1 - distance, 2),
+        }
+        for text, metadata, distance in zip(
+            result["documents"][0], result["metadatas"][0], result["distances"][0]
+        )
+    ]
+    return sorted(retrieved, key=lambda item: item["similarity"], reverse=True)
 
 
 def augment_prompt(question, retrieved_chunks):
