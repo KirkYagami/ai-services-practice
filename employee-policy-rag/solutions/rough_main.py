@@ -54,6 +54,7 @@ def retrieve_sections(question, embedding_model, collection):
     result = collection.query(query_embeddings = [embedding], n_results = N_RESULTS)
 
     retrieved = []
+
     for text, metadata, distnace in zip(
         result["documents"][0],
         result["metadatas"][0],
@@ -116,11 +117,15 @@ def policy_qa_pipeline(question, document_path):
         embeddings=embeddings.tolist()
     )
 
+
     retrieved = retrieve_sections(question, embedding_model, collection)
 
     prompt = augment_prompt(question, retrieved)
+
     client = genai.Client(api_key=GEMINI_API_KEY)
+
     answer = generate_answer(prompt, client)
+    
     sources = list(dict.fromkeys(item["section"] for item in retrieved))
 
     return {
